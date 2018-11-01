@@ -12,10 +12,10 @@ String currentYear = str(endYear);
 String currentRole = roles[0];
 
 
-DropdownList yearDropList;
-DropdownList roleDropList;
-CheckBox statusCheckBox;
-int statusNum = 4;
+DropdownList mode1YearDropList;
+DropdownList mode1RoleDropList;
+CheckBox mode1StatusCheckBox;
+int mode1StatusNum = 4;
 float[] previousCheckBoxStates;
 
 float plotWidth = 700.0;
@@ -31,6 +31,16 @@ String yLabel = "Performance Score";
 String yMax;
 String yMin;
 
+int currentMode = 1;
+float modeButtonPosX = 10;
+float modeButtonPosY = 560;
+float modeButtonWidth = 130;
+float modeButtonHeight = 30;
+float transitionOpacity = 0;
+boolean fadingOut = false;
+boolean modeTransitioning = false;
+String[] modeText = {"Team", "Player"};
+
 int colorDPosX = (int)plotOriginX + 20;
 int colorDPosY = (int)plotOriginY + 15;
 int colorDWidth = 80;
@@ -45,10 +55,8 @@ float dataRadius = 7;
 int[][] dataColors = {{255, 216, 0}, {88, 112, 88}, {88, 116, 152}, {232, 104, 80}};
 float[] highScores = new float[4];
 float[] lowScores = new float[4];
-List<PlotData> fa0Data = new ArrayList<PlotData>();
-List<PlotData> fa1Data = new ArrayList<PlotData>();
-List<PlotData> fa2Data = new ArrayList<PlotData>();
-List<PlotData> otherData = new ArrayList<PlotData>();
+
+PlotData[][] mode1Data = new PlotData[4][dataNum];
 
 class PlotData {
   float xPos;
@@ -76,32 +84,32 @@ void setup() {
   size(1000, 600);
   background(255);
   cp5 = new ControlP5(this);
+  cp5.setAutoDraw(false);
   f = createFont("Arial", 16, true);
   
   // initialize plotData with fake data
-  for (int i = 0; i < 25; i++) {
-    fa0Data.add(new PlotData(plotOriginX + plotMarginX + (plotWidth - 2 * plotMarginX) / (dataNum - 1) * i, i * 1));
-    fa1Data.add(new PlotData(plotOriginX + plotMarginX + (plotWidth - 2 * plotMarginX) / (dataNum - 1) * i, i * 2));
-    fa2Data.add(new PlotData(plotOriginX + plotMarginX + (plotWidth - 2 * plotMarginX) / (dataNum - 1) * i, i * 3));
-    otherData.add(new PlotData(plotOriginX + plotMarginX + (plotWidth - 2 * plotMarginX) / (dataNum - 1) * i, i * 2.5));
+  for (int i = 0; i < mode1Data.length; i++) {
+    for (int j = 0; j < dataNum; j++) {
+      mode1Data[i][j] = new PlotData(plotOriginX + plotMarginX + (plotWidth - 2 * plotMarginX) / (dataNum - 1) * j, j * (i + 0.5));
+    }
   }
 
   // initialize dropLists
-  yearDropList = cp5.addDropdownList("YEAR").setPosition(dropdownPosX, dropdownPosY);
-  roleDropList = cp5.addDropdownList("ROLE").setPosition(dropdownPosX + 185, dropdownPosY);
+  mode1YearDropList = cp5.addDropdownList("YEAR").setPosition(dropdownPosX, dropdownPosY);
+  mode1RoleDropList = cp5.addDropdownList("ROLE").setPosition(dropdownPosX + 185, dropdownPosY);
   for (int i = startYear; i <= endYear; i++) {
-    yearDropList.addItem(str(i), i - startYear);
+    mode1YearDropList.addItem(str(i), i - startYear);
   }
   for (int i = 0; i < roles.length; i++) {
-    roleDropList.addItem(roles[i], i); 
+    mode1RoleDropList.addItem(roles[i], i); 
   }
-  customizeDropdownList(yearDropList);
-  customizeDropdownList(roleDropList);  
-  yearDropList.close();
-  roleDropList.close();
+  customizeDropdownList(mode1YearDropList);
+  customizeDropdownList(mode1RoleDropList);  
+  mode1YearDropList.close();
+  mode1RoleDropList.close();
   
   // initialize checkbox
-  statusCheckBox = cp5.addCheckBox("statusCheckBox")
+  mode1StatusCheckBox = cp5.addCheckBox("mode1StatusCheckBox")
                 .setPosition(400, 83)
                 .setSize(15, 15)
                 .setItemsPerRow(4)
@@ -118,26 +126,69 @@ void setup() {
                 .addItem("Other", 3)
                 .setNoneSelectedAllowed(false)
                 ;
-  statusCheckBox.activateAll();
+  mode1StatusCheckBox.activateAll();
   
   definePlotScale();
 }
  
 void draw() {
   background(255);
+
+  cp5.draw();
+  drawProgramHeader();  
+  drawPlotFrame();
+  drawModeTitle();
   
-  // draw program header
+  if (currentMode == 0) {
+    // drawMode0Data();
+  }  
+  
+  if (currentMode == 1) {  
+    drawMode1Data();   
+    drawMode1ColorDescriptionBox();
+    checkMode1HoverData();
+  }
+  modeTransitioning();
+  drawModeButton();
+}
+
+void modeTransitioning() {
+  if (modeTransitioning) {
+    fill(0, transitionOpacity);
+    rect(-1, -1, 1001, 601);
+    if (fadingOut)
+      transitionOpacity += 7;
+    else
+      transitionOpacity -= 7;
+    if (fadingOut && transitionOpacity >= 255) {
+      currentMode = currentMode == 0 ? 1 : 0;
+      fadingOut = !fadingOut;
+      if (currentMode == 1) {
+        mode1RoleDropList.show();
+        mode1StatusCheckBox.show();
+      }
+      else {
+        mode1RoleDropList.hide();
+        mode1StatusCheckBox.hide();
+      }    
+    }
+    if (!fadingOut && transitionOpacity <= 0) {
+      modeTransitioning = false;
+      fadingOut = true;
+      transitionOpacity = 0;
+    }
+  }
+}
+
+void drawProgramHeader() {
   fill(0);
   textFont(f, 15);
   textAlign(LEFT);
   text("CS6260 Term Project", 30, 30);
   text("Che Shian Hung, Dewan Chaulagain, Oluwaseun Sesan Shadare, Shadi Moradi", 30, 55);
-  textFont(f, 42);
-  text("Let's help Brandon!", 600, 55);
-  textFont(f, 20);
-  text("to find the cheapest best players :)", 633, 95);
-  
-  // draw plot frame
+}
+
+void drawPlotFrame() {
   fill(255);
   rect(plotOriginX, plotOriginY, plotWidth, plotHeight);
   for (int i = dataNum / xAxisStep; i >= 0; i--) {
@@ -152,34 +203,60 @@ void draw() {
   }
   text(xLabel, plotOriginX + plotWidth / 2, plotOriginY + plotHeight + 50);
   pushMatrix();
-  translate(plotOriginX - 60, plotOriginY + plotHeight / 2);
+  translate(plotOriginX - 30, plotOriginY + plotHeight / 2);
   rotate(-HALF_PI);
   text(yLabel, 0, 0);
   popMatrix();
+}
+
+void drawModeButton() {
+  if (modeTransitioning || (mouseX > modeButtonPosX && mouseX < modeButtonPosX + modeButtonWidth &&
+      mouseY > modeButtonPosY && mouseY < modeButtonPosY + modeButtonHeight)) {
+    fill(0);
+    rect(modeButtonPosX, modeButtonPosY, modeButtonWidth, modeButtonHeight);
+    fill(255);
+    textFont(f, 17);
+    textAlign(CENTER);
+    text("Change Mode", modeButtonPosX + modeButtonWidth / 2, modeButtonPosY + modeButtonHeight / 2 + 6);
+  }
+  else {   
+    fill(255);
+    rect(modeButtonPosX, modeButtonPosY, modeButtonWidth, modeButtonHeight);
+    fill(0);
+    textFont(f, 17);
+    textAlign(CENTER);
+    text(modeText[currentMode] + " Mode", modeButtonPosX + modeButtonWidth / 2, modeButtonPosY + modeButtonHeight / 2 + 6);
+  }
+}
+
+void drawModeTitle() {
+  fill(0);
+  textAlign(LEFT);
+  textFont(f, 42);
+  text("Let's help " + ((currentMode == 0) ? "Dr. Lee" : "Brandon") + "!", 600, 55);
+  textFont(f, 20);
+  text("to find the cheapest best " + modeText[currentMode].toLowerCase() + " :)", 633, 95);
+}
+
+void drawMode1Data() {
   fill(0);
   textFont(f, 35);
   textAlign(LEFT);
   text(currentYear + " " + currentRole, 370, 180);
-  
-  // draw data
-  fill(0);
   textFont(f, 14);
   textAlign(CENTER);
   text(yMax, plotOriginX - 25, plotOriginY + plotMarginY + 6);
   text(yMin, plotOriginX - 25, plotOriginY + plotHeight - plotMarginY + 6);
   strokeWeight(0.25);
-  //fill(255, 216, 0); // lemon
-  if (statusCheckBox.getArrayValue()[0] == 1.0) drawList(fa0Data, dataColors[0]);
-  //fill(88, 112, 88); // green
-  if (statusCheckBox.getArrayValue()[1] == 1.0) drawList(fa1Data, dataColors[1]);
-  //fill(88, 116, 152); // blue
-  if (statusCheckBox.getArrayValue()[2] == 1.0) drawList(fa2Data, dataColors[2]);
-  //fill(232, 104, 80); // red
-  if (statusCheckBox.getArrayValue()[3] == 1.0) drawList(otherData, dataColors[3]);
+  
+  for (int i = 0; i < mode1StatusNum; i++)
+    if (mode1StatusCheckBox.getArrayValue()[i] == 1.0) drawPlotData(mode1Data[i], dataColors[i]);
+    
   stroke(0);
   strokeWeight(1);
-  
-  // draw color description box
+}
+
+void drawMode1ColorDescriptionBox() {
   fill(255);
   rect(colorDPosX, colorDPosY, colorDWidth, colorDHeight);
   fill(0);
@@ -198,13 +275,6 @@ void draw() {
   fill(232, 104, 80);
   rect(colorDPosX + 13, colorDPosY + colorDHeight / 5 * 4 - 5, 20, 10);
   stroke(0);
-  
-  // if user points to a data
-  if (statusCheckBox.getArrayValue()[0] == 1.0) hoverData(fa0Data);
-  if (statusCheckBox.getArrayValue()[1] == 1.0) hoverData(fa1Data);
-  if (statusCheckBox.getArrayValue()[2] == 1.0) hoverData(fa2Data);
-  if (statusCheckBox.getArrayValue()[3] == 1.0) hoverData(otherData);
-  stroke(0);
 }
 
 void customizeDropdownList(DropdownList ddl) {
@@ -217,16 +287,16 @@ void customizeDropdownList(DropdownList ddl) {
 // controlEvent monitors clicks on the gui
 void controlEvent(ControlEvent theEvent) {
   // checkbox event
-  if (theEvent.isFrom(statusCheckBox)) {
+  if (theEvent.isFrom(mode1StatusCheckBox)) {
     // make sure at least one box is checked
-    if (checkBoxAllFalse(statusCheckBox.getArrayValue())) {
+    if (checkBoxAllFalse(mode1StatusCheckBox.getArrayValue())) {
       for (int i = 0; i < previousCheckBoxStates.length; i++) {
         if (previousCheckBoxStates[i] == 1.0)
-          statusCheckBox.activate(i);
+          mode1StatusCheckBox.activate(i);
       }
       return;
     }
-    previousCheckBoxStates = statusCheckBox.getArrayValue();
+    previousCheckBoxStates = mode1StatusCheckBox.getArrayValue();
     definePlotScale();
   }
   // dropdown list event
@@ -252,22 +322,18 @@ boolean checkBoxAllFalse(float[] ary) {
 }
 
 void setHighLowScores() {
-  highScores[0] = fa0Data.get(dataNum - 1).score;
-  highScores[1] = fa1Data.get(dataNum - 1).score;
-  highScores[2] = fa2Data.get(dataNum - 1).score;
-  highScores[3] = otherData.get(dataNum - 1).score;
-  lowScores[0] = fa0Data.get(0).score;
-  lowScores[1] = fa1Data.get(0).score;
-  lowScores[2] = fa2Data.get(0).score;
-  lowScores[3] = otherData.get(0).score;
+  for (int i = 0; i < mode1StatusNum; i++) {
+    highScores[i] = mode1Data[i][dataNum - 1].score; 
+    lowScores[i] = mode1Data[i][0].score;
+  }
 }
 
 void definePlotScale() {
   setHighLowScores();
   maxScore = Float.MIN_VALUE;
   minScore = Float.MAX_VALUE;
-  for (int i = 0; i < statusNum; i++) {
-    if (statusCheckBox.getArrayValue()[i] == 1.0) {
+  for (int i = 0; i < mode1StatusNum; i++) {
+    if (mode1StatusCheckBox.getArrayValue()[i] == 1.0) {
        if (maxScore < highScores[i])
          maxScore = highScores[i];
        if (minScore > lowScores[i])
@@ -278,10 +344,10 @@ void definePlotScale() {
   yMin = str(minScore);
 }
 
-void drawList(List<PlotData> l, int [] c) {
+void drawPlotData(PlotData[] plotData, int[] c) {
   float preX = 0;
   float preY = 0;
-  for (PlotData pd : l) {
+  for (PlotData pd : plotData) {
     noStroke();
     fill(c[0], c[1], c[2]);
     float y = map(pd.score, minScore, maxScore, 0, plotHeight - plotMarginY * 2);
@@ -298,7 +364,13 @@ void drawList(List<PlotData> l, int [] c) {
   }
 }
 
-void hoverData(List<PlotData> plotData) {
+void checkMode1HoverData() {
+  for (int i = 0; i < mode1StatusNum; i++)
+    if (mode1StatusCheckBox.getArrayValue()[i] == 1.0)
+      hoverData(mode1Data[i]);
+}
+
+void hoverData(PlotData[] plotData) {
   for (PlotData pd : plotData) {
        float y = map(pd.score, minScore, maxScore, 0, plotHeight - plotMarginY * 2);
        if (mouseX > pd.xPos - dataRadius && mouseX < pd.xPos + dataRadius && mouseY > plotOriginY + plotHeight - plotMarginY - y - dataRadius && mouseY < plotOriginY + plotHeight - plotMarginY - y + dataRadius) {
@@ -316,10 +388,15 @@ void hoverData(List<PlotData> plotData) {
 }
 
 void mousePressed() {
-  if (!yearDropList.isMouseOver()) {    
-    yearDropList.close();
+  if (!mode1YearDropList.isMouseOver()) {    
+    mode1YearDropList.close();
   }
-  if (!roleDropList.isMouseOver()) {    
-    roleDropList.close();
+  if (!mode1RoleDropList.isMouseOver()) {    
+    mode1RoleDropList.close();
+  }
+  if (!modeTransitioning && mouseX > modeButtonPosX && mouseX < modeButtonPosX + modeButtonWidth &&
+      mouseY > modeButtonPosY && mouseY < modeButtonPosY + modeButtonHeight) {
+    modeTransitioning = true;
+    fadingOut = true;
   }
 }
