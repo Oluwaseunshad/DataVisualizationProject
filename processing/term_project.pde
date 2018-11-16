@@ -17,6 +17,7 @@ int teamInfoYPos = 170;
 int teamRuleXPos = 193;
 int teamRuleYPos = 86;
 int teamInfoRowSize = 20;
+float teamDotSpeed = 0.06;
 float teamHighScore;
 float teamLowScore;
 Table teamTable;
@@ -26,6 +27,8 @@ String teamTableName = "TeamFinal.csv";
 String[] teamAttributes = {"year", "teamid", "teamname", "salary", "score", 
                        "finalscore", "lgid", "franchname", "divid", "rank",
                        "w", "l", "divwin", "wcwin", "lgwin", "wswin", "r", "hr"};
+float[] teamTargetYPos = new float[teamRankNum];
+float[] teamCurrentYPos = new float[teamRankNum];
 TeamData[][] teamData = new TeamData[teamEndYear - teamStartYear + 1][teamRankNum];
 DropdownList teamYearDropList;
 
@@ -222,6 +225,9 @@ void setup() {
   }
   
   definePlotScale();
+  for (int i = 0; i < teamRankNum; i++) {
+    teamCurrentYPos[i] = teamTargetYPos[i];
+  }
 }
  
 void draw() {
@@ -233,6 +239,7 @@ void draw() {
   drawModeTitle();
   
   if (currentMode == 0) {
+    updateTeamData();
     drawTeamData();
     drawTeamRule();
     drawTeamInfo();
@@ -371,7 +378,7 @@ void drawTeamData() {
     TeamData td = teamData[currentTeamYear - teamStartYear][i];
     noStroke();
     fill(dataColors[3][0], dataColors[3][1], dataColors[3][2]);
-    float y = map(td.investmentScore, teamLowScore, teamHighScore, 0, plotHeight - plotMarginY * 2);
+    float y = teamCurrentYPos[i];
     ellipse(td.xPos, plotOriginY + plotHeight - plotMarginY - y, (i == currentTeamClickIndex ? 1.75 : 1) * dataRadius, (i == currentTeamClickIndex ? 1.75 : 1) * dataRadius); 
     stroke(0);
     if (preX != 0) {
@@ -384,6 +391,12 @@ void drawTeamData() {
   
   stroke(0);
   strokeWeight(1);
+}
+
+void updateTeamData() {
+  for (int i = 0; i < teamRankNum; i++) {
+    teamCurrentYPos[i] += (teamTargetYPos[i] - teamCurrentYPos[i]) * teamDotSpeed;
+  }
 }
 
 void drawTeamRule() {
@@ -530,6 +543,13 @@ boolean checkBoxAllFalse(float[] ary) {
   return true;
 }
 
+void setTeamTargetYPos() {
+  for (int i = 0; i < teamRankNum; i++) {
+    TeamData td = teamData[currentTeamYear - teamStartYear][i];
+    teamTargetYPos[i] = map(td.investmentScore, teamLowScore, teamHighScore, 0, plotHeight - plotMarginY * 2);
+  }
+}
+
 void setHighLowScores() {
   if (currentMode == 0) {
     teamHighScore = teamData[currentTeamYear - teamStartYear][0].investmentScore;
@@ -543,6 +563,7 @@ void setHighLowScores() {
     }
     teamYMax = nf(teamHighScore, 1, 2);
     teamYMin = nf(teamLowScore, 1, 2);
+    setTeamTargetYPos();
   }
   else {
     for (int i = 0; i < mode1StatusNum; i++) {
