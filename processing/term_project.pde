@@ -13,7 +13,7 @@ int teamRankNum = 10;
 int currentTeamYear = 2016;
 int currentTeamClickIndex = -1;
 int teamInfoXPos = 15;
-int teamInfoYPos = 160;
+int teamInfoYPos = 170;
 int teamRuleXPos = 193;
 int teamRuleYPos = 86;
 int teamInfoRowSize = 20;
@@ -367,11 +367,12 @@ void drawTeamData() {
   
   float preX = 0;
   float preY = 0;
-  for (TeamData td : teamData[currentTeamYear - teamStartYear]) {
+  for (int i = 0; i < teamRankNum; i++) {
+    TeamData td = teamData[currentTeamYear - teamStartYear][i];
     noStroke();
     fill(dataColors[3][0], dataColors[3][1], dataColors[3][2]);
     float y = map(td.investmentScore, teamLowScore, teamHighScore, 0, plotHeight - plotMarginY * 2);
-    ellipse(td.xPos, plotOriginY + plotHeight - plotMarginY - y, dataRadius, dataRadius); 
+    ellipse(td.xPos, plotOriginY + plotHeight - plotMarginY - y, (i == currentTeamClickIndex ? 1.75 : 1) * dataRadius, (i == currentTeamClickIndex ? 1.75 : 1) * dataRadius); 
     stroke(0);
     if (preX != 0) {
       stroke(dataColors[3][0], dataColors[3][1], dataColors[3][2]);
@@ -401,6 +402,7 @@ void drawTeamInfo() {
   fill(dataColors[1][0], dataColors[1][1], dataColors[1][2]);
   textFont(f, 12);
   textAlign(LEFT);
+  text("Rank:  " + str(currentTeamClickIndex + 1), teamInfoXPos, teamInfoYPos + -1 * teamInfoRowSize);
   text("Team Name:  " + td.teamName, teamInfoXPos, teamInfoYPos + 0 * teamInfoRowSize);
   text("Team ID:  " + td.teamId, teamInfoXPos, teamInfoYPos + 1 * teamInfoRowSize);
   text("Year:  " + str(td.year), teamInfoXPos, teamInfoYPos + 2 * teamInfoRowSize);
@@ -600,6 +602,11 @@ void checkTeamHoverData() {
       textAlign(LEFT);
       text(td.teamName, mouseX - 150 + 10, mouseY + 25);
       text("Investment Score: " + nf(td.investmentScore, 1, 2), mouseX - 150 + 10, mouseY + 40);
+      
+      noStroke();
+      fill(dataColors[3][0], dataColors[3][1], dataColors[3][2]);
+      ellipse(td.xPos, plotOriginY + plotHeight - plotMarginY - y, dataRadius * 1.75, dataRadius * 1.75); 
+      stroke(0);
       break;
     }
   }
