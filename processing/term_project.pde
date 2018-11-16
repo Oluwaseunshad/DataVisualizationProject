@@ -40,7 +40,6 @@ String[] roles = {"Batter", "Pitcher"};
 String currentYear = str(endYear);
 String currentRole = roles[0];
 
-
 DropdownList mode1YearDropList;
 DropdownList mode1RoleDropList;
 CheckBox mode1StatusCheckBox;
