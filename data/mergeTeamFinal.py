@@ -29,7 +29,7 @@ for tRow in tReader:
     teamList.append([tRow[2], tRow[40], tRow[1], tRow[3], tRow[4], tRow[5], tRow[8], tRow[9], tRow[10], tRow[11], tRow[12], tRow[13], tRow[14], tRow[19]])
 
   else:
-    for i in range(0, 10):
+    for i in range(0, 30):
       rRow = rReader.next()
       for items in teamList:
         if rRow[1] == items[0]:
@@ -39,7 +39,7 @@ for tRow in tReader:
     teamList = []
     teamList.append([tRow[2], tRow[40], tRow[1], tRow[3], tRow[4], tRow[5], tRow[8], tRow[9], tRow[10], tRow[11], tRow[12], tRow[13], tRow[14], tRow[19]])
 
-for i in range(0, 10):
+for i in range(0, 30):
   rRow = rReader.next()
   for items in teamList:
     if rRow[1] == items[0]:

@@ -29,7 +29,7 @@ with open('Teams.csv', 'r') as readFile:
       if lgwin == "Y":
         score += 1.5
       if wswin == "Y":
-        score += 2
+        score += 1
       print "%f %f %s %s %s %s -> %f" % (win, loss, divwin, wcwin, lgwin, wswin, score)
 
       writer.writerow({'year': row[0], 'teamid': row[2], 'score': score})
