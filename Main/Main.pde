@@ -17,6 +17,7 @@ float transitionOpacity = 0;
 boolean fadingOut = false;
 boolean modeTransitioning = false;
 List dropdownItemList = Arrays.asList("Team Ranking", "Player Ranking", "Other 1", "Other 2", "Other 3");
+List dropdownYearList = Arrays.asList("2000","2001","2002","2003","2004","2000","2001","2002","2003","2004","2000","2001","2002","2003","2004");
  String[][] teams = {{"Anaheim Angels(ANA)","Arizona Diamondbacks(ARI)","Atlanta Braves(ATL)","Baltimore Orioles(BAL)","Boston Red Sox(BOS)","Chicago White Sox(CHA)"},
                     {"Chicago Cubs(CHN)","Cincinnati Reds(CIN)","Cleveland Indians (CLE)","Colorado Rockies(COL)","Detroit Tigers(DET)","Florida Marlins(FLO)"},
                     {"Houston Astros(HOU)","Kansas City Royals(KCA)","Los Angeles Dodgers(LAN)","Milwaukee Brewers(MIL)","Minnesota Twins(MIN)","Montral Expos(MON)"},
@@ -25,7 +26,7 @@ List dropdownItemList = Arrays.asList("Team Ranking", "Player Ranking", "Other 1
   
 ScrollableList modeDropList;
 Button[] button = new Button[17];
-Button[] playersButton = new Button[9];
+Button[] playersButton = new Button[10];
 ControlFont font;
 boolean endWelcomeScreen=false;
 boolean dropDownVisible = true;
@@ -35,8 +36,10 @@ boolean drawYearListOnce = true;
 int yearClicked;
 String[] clickedPlayersID = new String[9];
 //Queue<PlayerData> playerClickedQueue = new LinkedList<>();
-
- 
+boolean check = true,displayflag=false;
+//boolean canPressYearButton = true;
+int buttonNumberPressed= 0;
+int[] buttonColor = {16734033,16760115,14417715,7733043,3407703,3407805,1152345,5432345,1235467};
 void setup() {
    size(1200,680);
    pg = createGraphics(1200, 680);
@@ -114,7 +117,9 @@ void draw() {
        size(1200,680);
        background(255);
        drawText(25,CENTER,clickedTeamID+" Players",xsize/2-300,30);
+       
        drawPlayersPart(); //will have functions to list players, make their graphs etc.
+       
       
      }
       break;
@@ -146,7 +151,7 @@ void modeTransitioning() {
     }
   }
 }
-void drawModeDropDown(String mode){
+void drawModeDropDown(String mode,List dropdownItemList){
 
 
   modeDropList = cp5.addScrollableList(mode)
@@ -185,8 +190,13 @@ void drawPlayersPart(){
   String filename = clickedTeamID + ".svg";
    bot = loadShape(filename);
    shape(bot,20,0,120,120);
+   if(displayflag)
+     {
+       displayTwoPlayerDetails();
+      // check =false;
+     }
    
-   if(yearClicked>=2000){
+   if(yearClicked>=2000 && check){
       displayPlayers(yearClicked,clickedTeamID);
      
     // System.out.println("2000 clicked");
@@ -202,37 +212,46 @@ void drawPlayersPart(){
 void displayPlayers(int yearClicked,String clickedTeamID){
   int buttonxpos = 200;
   int buttonypos = 50;
-    cp5 = new ControlP5(this);
+    cp6 = new ControlP5(this);
     int j=0;
     for(int i=0;i<1332;i++){
         if(playerData[i][yearClicked-2000]!=null &&  playerData[i][yearClicked-2000].teamID.contains(clickedTeamID)){
         //System.out.println(playerData[i][yearClicked-2000].playerName);
         //playerClickedQueue.add(playerData[i][yearClicked-2000]);
-         //playersButton[j]= cp5.addButton(playerData[i][yearClicked-2000].playerName).setPosition(buttonxpos,buttonypos).setSize(100,60)
-         playersButton[j]= cp5.addButton(str(i + 10000)).setPosition(buttonxpos,buttonypos).setSize(100,60)
-          
+         playersButton[j]= cp6.addButton(playerData[i][yearClicked-2000].playerName)
+         .setPosition(buttonxpos,buttonypos).setSize(100,60)
+        
        //Set the pre-defined Value of the button : (int)
        .setValue(0)
+       .setColorBackground(buttonColor[0]) 
        //set the way it is activated : RELEASE the mouseboutton or PRESS it
-       .activateBy(ControlP5.PRESS).setOff() ;
+       .activateBy(ControlP5.PRESS).setOn() ;
         clickedPlayersID[j++]=playerData[i][yearClicked-2000].playerID;
        // System.out.println(clickedPlayersID[j++]);
         //this will have the 9 playerID for each team for each year
       buttonxpos+=105;
   }
     }
- 
-
-    displayTwoPlayerDetails();
-   //cp6.hide(playersButton[0]);
-   //cp6.controlEvent(ControlEvent theEvent);
-    // cp6.draw();
+    playersButton[9]= cp6.addButton("Back to year").setPosition(180,500).setSize(100,60)
+        
+       //Set the pre-defined Value of the button : (int)
+       .setValue(159)
+       .setColorBackground(buttonColor[0]) 
+       //set the way it is activated : RELEASE the mouseboutton or PRESS it
+       .activateBy(ControlP5.PRESS).setOn() ;
+    
+   //displayTwoPlayerDetails();
+   check = false;
+   // cp6.hide(playersButton[0]);
+   //cp6.controlEvent(CckontrolEvent theEvent);
+     //cp6.draw();
 
 }
 void displayTwoPlayerDetails(){
-  getPlayerDetails(clickedPlayersID[0]);
+  int i = buttonNumberPressed;
+ // getPlayerDetails(clickedPlayersID[i]);
   //lets plot player salary over the year
-  int index = hash.get(clickedPlayersID[0]);
+  int index = hash.get(clickedPlayersID[i]);
   int maxSal = getHighestPaidPlayer(yearClicked);
   drawAxesAndLabels(2016,2000,maxSal,0.5,"Years","Salary in Million");
   
@@ -271,6 +290,7 @@ void drawYearListOnLeft(){
   
   cp5.hide();
    cp5 = new ControlP5(this);
+  // drawModeDropDown("Select Year",dropdownYearList );
   for(;i<=teamEndYear;i++){
      button[i-2000]= cp5.addButton("Year"+i).setPosition(buttonxpos,buttonypos).setSize(100,30)
        //Set the pre-defined Value of the button : (int)
@@ -349,49 +369,45 @@ void controlEvent(ControlEvent theEvent) {
           fadingOut = true;
         }
         break;
+      //case "Select Year":
+      //              yearClicked = int(theEvent.getController().getValue())+2000;
+         
+        
+      //  break;
+          
       default:
         break;
     }
   }
  
   
-  if((theEvent.isFrom(button[0])||(theEvent.isFrom(button[1])))||(theEvent.isFrom(button[2])||(theEvent.isFrom(button[3])))||(theEvent.isFrom(button[4])||
-  (theEvent.isFrom(button[5])))||(theEvent.isFrom(button[6])||(theEvent.isFrom(button[7])))||(theEvent.isFrom(button[8])||(theEvent.isFrom(button[9])))||
-  (theEvent.isFrom(button[10])||(theEvent.isFrom(button[11])))||(theEvent.isFrom(button[12])||(theEvent.isFrom(button[13])))||(theEvent.isFrom(button[14])||(theEvent.isFrom(button[15])))
-  ||(theEvent.isFrom(button[16]))){
-  //System.out.println(theEvent.getController().getName());
-  if(theEvent.getController().getName().contains("Year")){
+   for (int i =0;i<17;i++)
+  {
+    if(theEvent.isFrom(button[i])){
+      if(theEvent.getController().getName().contains("Year")){
      String temp =  theEvent.getController().getName().substring(4,8);
      yearClicked = Integer.parseInt(temp);
-    //switch (theEvent.getController().getName()) {
-    //  case "Year2016":
-    //        System.out.println("2016");
-    //        break;
-    //  case "Year2000":
-    //     System.out.println("2010");
-    //        break;
-    //  default:
-    //    break;
-  
-    //  }
-    }
+     }
   }
-  
-   //for(int i=0;i<9;i++){
-  //  System.out.println("pressed");
-  if(yearClicked>=2000){
-    //System.out.println("we are gere");
-  if(theEvent.isFrom(button[0])){
-    System.out.println(String.valueOf(playersButton[0]));
-    System.out.println("pressed");
-    //  getPlayerDetails(clickedPlayersID[0]);
     }
-  if(theEvent.isFrom("10001")){
-    System.out.println("pressed");
+  for (int i =0;i<9;i++)
+  {
+    if(theEvent.isFrom(playersButton[i])){
+      buttonNumberPressed = i;
+      displayflag=true;
+       System.out.println("pressed button "+ (i+1));
+       
+    }  
   }
-}  
-  
-  
+  if(theEvent.isFrom(playersButton[9])){
+      //buttonNumberPressed = 8;
+      yearClicked=0;
+      displayflag=false;
+       System.out.println("pressed button "+ (8+1));
+       check = true;
+       cp6.hide();
+       
+    }  
 }
 
 void mousePressed() {
@@ -427,7 +443,7 @@ void keyPressed() {
         
        currentMode=0;
        if(dropDownVisible){
-      drawModeDropDown("MODE SELECT");
+      drawModeDropDown("MODE SELECT",dropdownItemList);
       dropDownVisible = false;
     }
       // pg.beginDraw(); 
