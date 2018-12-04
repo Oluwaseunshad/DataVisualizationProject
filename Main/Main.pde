@@ -192,7 +192,7 @@ void drawPlayersPart(){
    shape(bot,20,0,120,120);
    if(displayflag)
      {
-       displayTwoPlayerDetails();
+       displayEachPlayerDetails();
       // check =false;
      }
    
@@ -235,8 +235,8 @@ void displayPlayers(int yearClicked,String clickedTeamID){
     playersButton[9]= cp6.addButton("Back to year").setPosition(180,500).setSize(100,60)
         
        //Set the pre-defined Value of the button : (int)
-       .setValue(159)
-       .setColorBackground(buttonColor[0]) 
+       .setValue(1)
+       .setColorBackground(255) 
        //set the way it is activated : RELEASE the mouseboutton or PRESS it
        .activateBy(ControlP5.PRESS).setOn() ;
     
@@ -247,18 +247,18 @@ void displayPlayers(int yearClicked,String clickedTeamID){
      //cp6.draw();
 
 }
-void displayTwoPlayerDetails(){
-  int i = buttonNumberPressed;
+void displayEachPlayerDetails(){
+  int i = buttonNumberPressed;     //which player button was clicked
  // getPlayerDetails(clickedPlayersID[i]);
   //lets plot player salary over the year
-  int index = hash.get(clickedPlayersID[i]);
-  int maxSal = getHighestPaidPlayer(yearClicked);
+  int index = hash.get(clickedPlayersID[i]);       // get the id of that player (as we had saved it above ) 
+  int maxSal = getHighestPaidPlayer(yearClicked);  
   drawAxesAndLabels(2016,2000,maxSal,0.5,"Years","Salary in Million");
   
   for(PlayerData pd : playerData[index])
     if(pd!=null){
      int m = (int)map(pd.salary,28000000,165574,150,415);
-     int x = (int)map( pd.yearID,2016,2000,300,1100);
+     int x = (int)map( pd.yearID,2000,2016,300,1100);
      strokeWeight(4);
      point(x,m);
     // System.out.println(x+"  "+m);

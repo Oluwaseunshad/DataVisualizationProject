@@ -15,7 +15,7 @@ void drawAxesLabels(String xlabel, String ylabel,int x1, int y1,int x2,int y2){
 
 void drawAxesScale(int strokeweight, int xsum, int ysum, int rowstart, int rowend, int rowrange, int linex,int colstart, int colend, int colrange ,int liney )
 {
-   strokeWeight(1);
+   strokeWeight(strokeweight);
    //float sum =2000;
   
   for(int i=rowstart;i<rowend;i+=rowrange)
