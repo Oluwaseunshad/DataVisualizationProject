@@ -26,6 +26,7 @@ List dropdownYearList = Arrays.asList("2000","2001","2002","2003","2004","2000",
   
 ScrollableList modeDropList;
 Button[] button = new Button[17];
+Button goBackToTeams;
 Button[] playersButton = new Button[10];
 ControlFont font;
 boolean endWelcomeScreen=false;
@@ -299,6 +300,11 @@ void drawYearListOnLeft(){
        .activateBy(ControlP5.PRESS).setOff() ;
       buttonypos+=32;
   }
+  goBackToTeams = cp5.addButton("Back to the teams").setPosition(1000,600).setSize(200,60)
+       //Set the pre-defined Value of the button : (int)
+       .setValue(0)
+       //set the way it is activated : RELEASE the mouseboutton or PRESS it
+       .activateBy(ControlP5.PRESS).setOff() ;
 }
 
 
@@ -407,7 +413,15 @@ void controlEvent(ControlEvent theEvent) {
        check = true;
        cp6.hide();
        
-    }  
+    }
+    if(theEvent.isFrom(goBackToTeams)){
+    
+      System.out.println("BAck");
+     teamLogoClicked=false;
+     check = true;displayflag=false;
+     buttonNumberPressed=0;
+     
+    }
 }
 
 void mousePressed() {
