@@ -36,25 +36,22 @@ void drawTeamLogos(){
    shape(botarr[2],xpos,ypos,figsize,figsize);
    xpos+=xadd;
    
-   img = loadImage("BAL.png");
-   image(img,xpos,ypos,figsize,figsize);
-   xpos+=xadd;
-   
    shape(botarr[3],xpos,ypos,figsize,figsize);
+   xpos+=xadd;
    xpos+=xadd;
    
    shape(botarr[4],xpos,ypos,figsize,figsize);
+   xpos+=xadd;
+   
+   shape(botarr[5],xpos,ypos,figsize,figsize);
    
    
     ypos+=(figsize+20);
    xpos = xsize/3-100;
   
-   shape(botarr[5],xpos,ypos,figsize,figsize);
-   xpos+=xadd;
-   
    shape(botarr[6],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-  
+   
    shape(botarr[7],xpos,ypos,figsize,figsize);
    xpos+=xadd;
   
@@ -63,68 +60,71 @@ void drawTeamLogos(){
   
    shape(botarr[9],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-    img = loadImage("FLO.png");
-   image(img,xpos,ypos,figsize,figsize);
-  
-   xpos = xsize/3-100;
-   ypos+=(figsize+20);
   
    shape(botarr[10],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-  
-   shape(botarr[11],xpos,ypos,figsize,figsize);
+   
+    shape(botarr[11],xpos,ypos,figsize,figsize);
    xpos+=xadd;
+  
+   xpos = xsize/3-100;
+   ypos+=(figsize+20);
   
    shape(botarr[12],xpos,ypos,figsize,figsize);
    xpos+=xadd;
   
    shape(botarr[13],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-   
+  
    shape(botarr[14],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-   
-   shape(botarr[15],xpos,ypos,figsize,figsize);
-   
-   xpos = xsize/3-100;
-   ypos+=(figsize+20);
   
+   shape(botarr[15],xpos,ypos,figsize,figsize);
+   xpos+=xadd;
+   
    shape(botarr[16],xpos,ypos,figsize,figsize);
    xpos+=xadd;
    
    shape(botarr[17],xpos,ypos,figsize,figsize);
-   xpos+=xadd;
+   
+   xpos = xsize/3-100;
+   ypos+=(figsize+20);
   
    shape(botarr[18],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-  
+   
    shape(botarr[19],xpos,ypos,figsize,figsize);
    xpos+=xadd;
   
    shape(botarr[20],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-   img = loadImage("SDN.png");
-   image(img,xpos,ypos,figsize,figsize);
-   
-  
-   xpos = xsize/3-100;
-   ypos+=(figsize+20);
   
    shape(botarr[21],xpos,ypos,figsize,figsize);
    xpos+=xadd;
   
    shape(botarr[22],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-  
    shape(botarr[23],xpos,ypos,figsize,figsize);
-   xpos+=xadd;
+   xpos+=xadd;   
+  
+   xpos = xsize/3-100;
+   ypos+=(figsize+20);
   
    shape(botarr[24],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-   
+  
    shape(botarr[25],xpos,ypos,figsize,figsize);
    xpos+=xadd;
-   
+  
    shape(botarr[26],xpos,ypos,figsize,figsize);
+   xpos+=xadd;
+  
+   shape(botarr[27],xpos,ypos,figsize,figsize);
+   xpos+=xadd;
+   
+   shape(botarr[28],xpos,ypos,figsize,figsize);
+   xpos+=xadd;
+   
+   shape(botarr[29],xpos,ypos,figsize,figsize);
  
   }

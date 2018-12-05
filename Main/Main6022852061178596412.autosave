@@ -2,7 +2,7 @@ import controlP5.*;
 import java.util.*;
 
 
-ControlP5 cp5,cp6;
+ControlP5 cp5,cp6,cp7;
 PShape bot;
 PShape botarr[];
 PGraphics pg;
@@ -26,8 +26,8 @@ List dropdownYearList = Arrays.asList("2000","2001","2002","2003","2004","2000",
   
 ScrollableList modeDropList;
 Button[] button = new Button[17];
-Button goBackToTeams;
-Button[] playersButton = new Button[10];
+Button[] playersButton = new Button[11];
+Button backbutton;
 ControlFont font;
 boolean endWelcomeScreen=false;
 boolean dropDownVisible = true;
@@ -40,7 +40,6 @@ String[] clickedPlayersID = new String[9];
 boolean check = true,displayflag=false;
 //boolean canPressYearButton = true;
 int buttonNumberPressed= 0;
-boolean clickedBackButton=false;
 int[] buttonColor = {16734033,16760115,14417715,7733043,3407703,3407805,1152345,5432345,1235467};
 void setup() {
    size(1200,680);
@@ -49,39 +48,39 @@ void setup() {
    botarr[0] = loadShape("ANA.svg");
    botarr[1] = loadShape("ARI.svg");
    botarr[2] = loadShape("ATL.svg");
-   botarr[3] = loadShape("BAL.svg");
-   botarr[4] = loadShape("BOS.svg");
-   botarr[5] = loadShape("CHA.svg");
-   botarr[6] = loadShape("CHN.svg");
-   botarr[7] = loadShape("CIN.svg");
-   botarr[8] = loadShape("CLE.svg");
-   botarr[9] = loadShape("COL.svg");
-   botarr[10] = loadShape("DET.svg");
-   botarr[11] = loadShape("FLO.svg");
-   botarr[12] = loadShape("HOU.svg");
-   botarr[13] = loadShape("KCA.svg");
-   botarr[14] = loadShape("LAN.svg");
-   botarr[15] = loadShape("MIL.svg");
-   botarr[16] = loadShape("MIN.svg");
-   botarr[17] = loadShape("MON.svg");
-   botarr[18] = loadShape("NYA.svg");
-   botarr[19] = loadShape("NYN.svg");
-   botarr[20] = loadShape("OAK.svg");
-   botarr[21] = loadShape("PHI.svg");
-   botarr[22] = loadShape("PIT.svg");
-   botarr[23] = loadShape("SDN.svg");
-   botarr[24] = loadShape("SEA.svg");
-   botarr[25] = loadShape("SFN.svg");
-   botarr[26] = loadShape("SLN.svg");
-   botarr[27] = loadShape("TBA.svg");
-   botarr[28] = loadShape("TEX.svg");
-   botarr[29] = loadShape("TOR.svg");
+   botarr[3] = loadShape("BOS.svg");
+   botarr[4] = loadShape("CHA.svg");
+   botarr[5] = loadShape("CHN.svg");
+   botarr[6] = loadShape("CIN.svg");
+   botarr[7] = loadShape("CLE.svg");
+   botarr[8] = loadShape("COL.svg");
+   botarr[9] = loadShape("DET.svg");
+   botarr[10] = loadShape("HOU.svg");
+   botarr[11] = loadShape("KCA.svg");
+   botarr[12] = loadShape("LAN.svg");
+   botarr[13] = loadShape("MIL.svg");
+   botarr[14] = loadShape("MIN.svg");
+   botarr[15] = loadShape("MON.svg");
+   botarr[16] = loadShape("NYA.svg");
+   botarr[17] = loadShape("NYN.svg");
+   botarr[18] = loadShape("OAK.svg");
+   botarr[19] = loadShape("PHI.svg");
+   botarr[20] = loadShape("PIT.svg");
+   botarr[21] = loadShape("SEA.svg");
+   botarr[22] = loadShape("SFN.svg");
+   botarr[23] = loadShape("SLN.svg");
+   botarr[24] = loadShape("TBA.svg");
+   botarr[25] = loadShape("TEX.svg");
+   botarr[26] = loadShape("TOR.svg");
   background(255);
   f = createFont("Arial", 20, true);
   font = new ControlFont(f,20);
   cp5 = new ControlP5(this);
   
   cp5.setAutoDraw(false);
+  cp7 = new ControlP5(this);
+  
+  cp7.setAutoDraw(false);
    
   
   
@@ -134,6 +133,7 @@ void draw() {
   }
   
   cp5.draw();
+  cp7.draw();
   modeTransitioning();
 }
 
@@ -189,8 +189,19 @@ void handlePlayerMode(){
 void drawPlayersPart(){
   if(drawYearListOnce)
     {drawYearListOnLeft();
+    //cp7 = new ControlP5(this);
+    cp6 = new ControlP5(this);
+     cp7 = new ControlP5(this);
+    playersButton[10] = cp7.addButton("Back to Selct Another Team").setPosition(1000,600).setSize(200,60) //Set the pre-defined Value of the button : (int)
+       .setValue(1)
+       .setColorBackground(255) 
+       //set the way it is activated : RELEASE the mouseboutton or PRESS it
+       .activateBy(ControlP5.PRESS).setOn() ;
       drawYearListOnce= false;
     }
+    
+        
+      
     
   String filename = clickedTeamID + ".svg";
    bot = loadShape(filename);
@@ -217,7 +228,7 @@ void drawPlayersPart(){
 void displayPlayers(int yearClicked,String clickedTeamID){
   int buttonxpos = 200;
   int buttonypos = 50;
-    cp6 = new ControlP5(this);
+    
     int j=0;
     for(int i=0;i<1332;i++){
         if(playerData[i][yearClicked-2000]!=null &&  playerData[i][yearClicked-2000].teamID.contains(clickedTeamID)){
@@ -294,21 +305,16 @@ void drawYearListOnLeft(){
   int buttonypos = 125;
   
   cp5.hide();
-   cp5 = new ControlP5(this);
+   cp7 = new ControlP5(this);
   // drawModeDropDown("Select Year",dropdownYearList );
   for(;i<=teamEndYear;i++){
-     button[i-2000]= cp5.addButton("Year"+i).setPosition(buttonxpos,buttonypos).setSize(100,30)
+     button[i-2000]= cp7.addButton("Year"+i).setPosition(buttonxpos,buttonypos).setSize(100,30)
        //Set the pre-defined Value of the button : (int)
        .setValue(0)
        //set the way it is activated : RELEASE the mouseboutton or PRESS it
        .activateBy(ControlP5.PRESS).setOff() ;
       buttonypos+=32;
   }
-  goBackToTeams = cp5.addButton("Back to the teams").setPosition(1000,600).setSize(200,60)
-       //Set the pre-defined Value of the button : (int)
-       .setValue(0)
-       //set the way it is activated : RELEASE the mouseboutton or PRESS it
-       .activateBy(ControlP5.PRESS).setOff() ;
 }
 
 
@@ -417,25 +423,24 @@ void controlEvent(ControlEvent theEvent) {
        check = true;
        cp6.hide();
        
-    }
-    ///the back button didnot work , again similar depedacy issue, so replaced it with 'b'o r'B' key
+    } 
+    if(theEvent.isFrom(playersButton[10])){
+      
+      
+      //buttonNumberPressed = 8;
+      teamLogoClicked = false;
+      check = true;
+      displayflag=false;
+      yearClicked=0;
+      
+      System.out.println("Back clicked");
+       cp6.hide();
+       //cp7.hide();
+       cp7.hide();
+       //cp5.show(dropdownList);
+       
+    } 
     
-    //if(theEvent.isFrom(goBackToTeams)){
-    
-    //  System.out.println("BAck");
-    // teamLogoClicked=false;
-    // check = true;displayflag=false;
-    // buttonNumberPressed=0;
-    // cp5.hide();
-    // cp6.hide();
-    // cp5 = new ControlP5(this);
-    // cp5.show();
-    //  drawModeDropDown("MODE SELECT",dropdownItemList);
-    //  dropDownVisible = false;
-    //  clickedBackButton= true;
-     
-     
-    //}
 }
 
 void mousePressed() {
@@ -447,15 +452,15 @@ void mousePressed() {
 void mouseOver(){
  
   if(mouseX>300 && mouseX<=xsize && mouseY >=0 && mouseY<=ysize)
-      drawText(15,LEFT,teams[mouseY/130][(mouseX-300)/130],mouseX,mouseY);
+      drawText(15,LEFT,teams[mouseY/130][(mouseX-300)/300],mouseX,mouseY);
   
 }
 void mouseClicked(){
-  if(currentMode==1 && teamLogoClicked==false ){ //if in player mode, then we have all logos, use that
+  if(currentMode==1 && teamLogoClicked==false){ //if in player mode, then we have all logos, use that
     if(mouseX>300 && mouseX<=xsize && mouseY >=0 && mouseY<=ysize)
       {
         teamLogoClicked=true;
-        String temp = teams[mouseY/130][(mouseX-300)/130];
+        String temp = teams[mouseY/130][(mouseX)/130];
         temp = temp.substring(temp.indexOf('(')+1,temp.indexOf(')'));
         clickedTeamID = temp;
         //background(255);      
@@ -474,27 +479,8 @@ void keyPressed() {
       drawModeDropDown("MODE SELECT",dropdownItemList);
       dropDownVisible = false;
     }
-    
+      // pg.beginDraw(); 
+      //  pg.clear();
+      //pg.endDraw(); 
     }
-    if (key=='b' || key =='B'){
-    System.out.println("BAck");
-     teamLogoClicked=false;
-     check = true;displayflag=false;
-     buttonNumberPressed=0;
-     cp5.hide();
-     if(cp6!=null)
-     cp6.hide();
-     yearClicked=0;
-     cp5 = new ControlP5(this);
-     cp5.show(); currentMode=1;
-      drawYearListOnce=true;
-      drawModeDropDown("MODE SELECT",dropdownItemList);
-      dropDownVisible = false;
-    
-    
-    }
-    
-    
-    
-    
 }
