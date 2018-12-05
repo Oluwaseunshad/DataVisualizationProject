@@ -420,6 +420,13 @@ void controlEvent(ControlEvent theEvent) {
      teamLogoClicked=false;
      check = true;displayflag=false;
      buttonNumberPressed=0;
+     cp5.hide();
+     cp6.hide();
+     cp5 = new ControlP5(this);
+     cp5.show();
+      drawModeDropDown("MODE SELECT",dropdownItemList);
+      dropDownVisible = false;
+     
      
     }
 }
