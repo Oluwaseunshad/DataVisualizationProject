@@ -40,6 +40,7 @@ String[] clickedPlayersID = new String[9];
 boolean check = true,displayflag=false;
 //boolean canPressYearButton = true;
 int buttonNumberPressed= 0;
+boolean clickedBackButton=false;
 int[] buttonColor = {16734033,16760115,14417715,7733043,3407703,3407805,1152345,5432345,1235467};
 void setup() {
    size(1200,680);
@@ -414,21 +415,24 @@ void controlEvent(ControlEvent theEvent) {
        cp6.hide();
        
     }
-    if(theEvent.isFrom(goBackToTeams)){
+    ///the back button didnot work , again similar depedacy issue, so replaced it with 'b'o r'B' key
     
-      System.out.println("BAck");
-     teamLogoClicked=false;
-     check = true;displayflag=false;
-     buttonNumberPressed=0;
-     cp5.hide();
-     cp6.hide();
-     cp5 = new ControlP5(this);
-     cp5.show();
-      drawModeDropDown("MODE SELECT",dropdownItemList);
-      dropDownVisible = false;
+    //if(theEvent.isFrom(goBackToTeams)){
+    
+    //  System.out.println("BAck");
+    // teamLogoClicked=false;
+    // check = true;displayflag=false;
+    // buttonNumberPressed=0;
+    // cp5.hide();
+    // cp6.hide();
+    // cp5 = new ControlP5(this);
+    // cp5.show();
+    //  drawModeDropDown("MODE SELECT",dropdownItemList);
+    //  dropDownVisible = false;
+    //  clickedBackButton= true;
      
      
-    }
+    //}
 }
 
 void mousePressed() {
@@ -440,15 +444,15 @@ void mousePressed() {
 void mouseOver(){
  
   if(mouseX>300 && mouseX<=xsize && mouseY >=0 && mouseY<=ysize)
-      drawText(15,LEFT,teams[mouseY/130][(mouseX-300)/300],mouseX,mouseY);
+      drawText(15,LEFT,teams[mouseY/130][(mouseX-300)/130],mouseX,mouseY);
   
 }
 void mouseClicked(){
-  if(currentMode==1 && teamLogoClicked==false){ //if in player mode, then we have all logos, use that
+  if(currentMode==1 && teamLogoClicked==false ){ //if in player mode, then we have all logos, use that
     if(mouseX>300 && mouseX<=xsize && mouseY >=0 && mouseY<=ysize)
       {
         teamLogoClicked=true;
-        String temp = teams[mouseY/130][(mouseX)/130];
+        String temp = teams[mouseY/130][(mouseX-300)/130];
         temp = temp.substring(temp.indexOf('(')+1,temp.indexOf(')'));
         clickedTeamID = temp;
         //background(255);      
@@ -467,8 +471,26 @@ void keyPressed() {
       drawModeDropDown("MODE SELECT",dropdownItemList);
       dropDownVisible = false;
     }
-      // pg.beginDraw(); 
-      //  pg.clear();
-      //pg.endDraw(); 
+    
     }
+    if (key=='b' || key =='B'){
+    System.out.println("BAck");
+     teamLogoClicked=false;
+     check = true;displayflag=false;
+     buttonNumberPressed=0;
+     cp5.hide();
+     cp6.hide();
+     yearClicked=0;
+     cp5 = new ControlP5(this);
+     cp5.show(); currentMode=1;
+      drawYearListOnce=true;
+      drawModeDropDown("MODE SELECT",dropdownItemList);
+      dropDownVisible = false;
+    
+    
+    }
+    
+    
+    
+    
 }
