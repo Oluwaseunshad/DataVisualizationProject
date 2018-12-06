@@ -1,3 +1,5 @@
+import java.util.Set;
+
 class TeamData {
   int year;
   int totalSalary;
@@ -20,6 +22,8 @@ class TeamData {
   String leagueName;
   String franchName;
   String division;
+  Set<String> players;
+  Set<String> faPlayers;
   
   TeamData(int xPos, int yPos, String[] teamInfo) {
     this.xPos = xPos;
@@ -43,5 +47,7 @@ class TeamData {
     this.runScore = int(teamInfo[16]);
     this.homeRun = int(teamInfo[17]);
     this.investmentRank = int(teamInfo[18]);
+    players = new HashSet<String>();
+    faPlayers = new HashSet<String>();
   }
 }

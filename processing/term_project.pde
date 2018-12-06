@@ -31,7 +31,6 @@ color teamDefaultColor = color(102, 102, 102);
 color teamButtonHighlight = #DC143C;
 Table teamTable;
 boolean teamSelectTransition = false;
-String teamTableName = "TeamFinal.csv";
 String[] teamAttributes = {"year", "teamid", "teamname", "salary", "score", 
                        "finalscore", "lgid", "franchname", "divid", "rank",
                        "w", "l", "divwin", "wcwin", "lgwin", "wswin", "r", "hr"};
@@ -147,7 +146,7 @@ void setup() {
 
   // import team data
   long sum = 0;
-  teamTable = loadTable(teamTableName, "header");
+  teamTable = loadTable("TeamFinal.csv", "header");
   for (int i = 0; i < teamTable.getRowCount(); i++) {
     TableRow row = teamTable.getRow(i);
     int year = i / teamCount;
@@ -165,6 +164,8 @@ void setup() {
       sum = 0;
     }
   }
+  loadFAPlayer();
+  loadTeamPlayer();
   addTeamColor();
   
   if (currentMode == 0) {
@@ -243,6 +244,61 @@ void modeTransitioning() {
       transitionOpacity = 0;
     }
   }
+}
+
+void loadFAPlayer() {
+  int year = teamStartYear;
+  String team = "";
+  TeamData temp = null;
+  Set s = null;
+  // import FA player data: playerID, year, team
+  teamTable = loadTable("FAPlayer.csv", "header");
+  
+  for (int i = 0; i < teamTable.getRowCount(); i++) {
+    TableRow row = teamTable.getRow(i);
+    if (!team.equals(row.getString("team")) || year != int(row.getString("year"))) {
+      if (s != null)
+        temp.faPlayers = s;
+      year = int(row.getString("year"));
+      team = row.getString("team");
+      temp = findTeamData(year - teamStartYear, team);
+      //if (temp == null) System.out.println(team);
+      s = temp.faPlayers;
+    }
+    s.add(row.getString("playerID"));
+  }
+}
+
+void loadTeamPlayer() {
+  int year = teamStartYear;
+  String team = "";
+  TeamData temp = null;
+  Set s = null;
+  // import FA player data: playerID, year, team
+  teamTable = loadTable("TeamPlayer.csv", "header");
+  
+  for (int i = 0; i < teamTable.getRowCount(); i++) {
+    TableRow row = teamTable.getRow(i);
+    if (!team.equals(row.getString("team")) || year != int(row.getString("year"))) {
+      if (s != null)
+        temp.players = s;
+      year = int(row.getString("year"));
+      team = row.getString("team");
+      temp = findTeamData(year - teamStartYear, team);
+      //if (temp == null) System.out.println(team);
+      s = temp.players;
+    }
+    s.add(row.getString("playerID"));
+  }
+}
+
+TeamData findTeamData(int index, String team) {
+  for (int i = 0; i < teamCount; i++) {
+     if (teamData[index][i].teamId.equals(team)) {
+       return teamData[index][i];
+     }
+  }
+  return null;
 }
 
 void displayWeightsTextfield(boolean show) {
