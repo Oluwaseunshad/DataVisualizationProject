@@ -91,6 +91,8 @@ int teamYearTriHeight = 30;
 int teamYearTriWidth = 30;
 int teamYearIndex;
 float teamMarkOpacity = 0;
+color teamGreen = #32CD32;
+color teamRed = #DC143C;
 String[] teamViewByLabels = {"View by Year", "View by Team"};
 String teamViewByButtonLabel = teamViewByLabels[teamViewByMode];
 
@@ -155,7 +157,10 @@ void setup() {
     for (int j = 0; j < teamColumnCount; j++)
       teamInfo[j] = row.getString(teamAttributes[j]);
     teamInfo[teamColumnCount] = str(rank + 1);
-    teamData[year][rank] = new TeamData((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * year + 33 + teamMarginX,
+    //teamData[year][rank] = new TeamData((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * year + 33 + teamMarginX,
+    //                                    (windowHeight - teamMarginBottom - teamMarginTop) / teamRankNum * (rank % teamRankNum) + teamMarginTop + 30, 
+    //                                    teamInfo);
+    teamData[year][rank] = new TeamData((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * (year - 1) + 33 + teamMarginX,
                                         (windowHeight - teamMarginBottom - teamMarginTop) / teamRankNum * (rank % teamRankNum) + teamMarginTop + 30, 
                                         teamInfo);
     sum += teamData[year][rank].totalSalary;
@@ -338,8 +343,10 @@ void drawModeTitle() {
   fill(0);
   textAlign(LEFT);
   textFont(f, 42);
-  if (currentMode == 0)
-    text("Baseball Team Investment Ranking", 600, 55);
+  if (currentMode == 0) {
+    textFont(f, 38); 
+    text("Baseball Team Investment Ranking", 580, 55);
+  }
   else
     text("Let's help " + ((currentMode % 2 == 0) ? "Dr. Lee" : "Brandon") + "!", 700, 55);
   //textFont(f, 20);
@@ -376,6 +383,7 @@ void resetTeamMode() {
   teamMode = 0;
   teamTargetMode = 0;
   teamLineOpacity = teamLineMaxOpacity;
+  setWeightsOpacity(255);
 }
 
 void drawTeamLines() {
@@ -394,10 +402,14 @@ void drawTeamLines() {
   
   fill(teamTextDefaultColor, teamLineOpacity * 2);
   stroke(0, teamLineOpacity);
-  text(str(teamStartYear), teamMarginX + 15, teamMarginTop - 10);
-  for(int i = 1; i <= teamEndYear - teamStartYear; i++) {
-    text(str(teamStartYear + i), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX + 15, teamMarginTop - 10);
-    line((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX, teamMarginTop - 15, (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX, windowHeight - teamMarginBottom); 
+  text(str(teamStartYear + 1), teamMarginX + 15, teamMarginTop - 10);
+  //for(int i = 1; i <= teamEndYear - teamStartYear; i++) {
+  //  text(str(teamStartYear + i), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX + 15, teamMarginTop - 10);
+  //  line((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX, teamMarginTop - 15, (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX, windowHeight - teamMarginBottom); 
+  //}
+  for(int i = 1; i <= teamEndYear - teamStartYear - 1; i++) {
+    text(str(teamStartYear + i + 1), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * i + teamMarginX + 15, teamMarginTop - 10);
+    line((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * i + teamMarginX, teamMarginTop - 15, (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * i + teamMarginX, windowHeight - teamMarginBottom); 
   }
   fill(teamTextDefaultColor, teamLineOpacity * 2);
   for (int i = 10 * teamCurrentPage; i < 10 * teamCurrentPage + teamRankNum; i++) {
@@ -410,7 +422,21 @@ void drawTeamRanking() {
   noStroke();
   textFont(f, 16);
   int opacity;
-  for (int i = 0; i < teamData.length; i++) {
+  //for (int i = 0; i < teamData.length; i++) {
+  //  for (int j = 10 * teamCurrentPage; j < 10 * teamCurrentPage + teamRankNum; j++) {
+  //    int colorIndex = teamColorMap.get(teamData[i][j].teamId);
+  //    if(teamData[i][j].teamId.equals(teamRankHighlight)) {
+  //      opacity = int(teamLineOpacity * 12);
+  //    }
+  //    else
+  //      opacity = int(teamLineOpacity * 4);
+  //    fill(teamColor[colorIndex * 2], opacity);
+  //    arc(teamData[i][j].xPos, teamData[i][j].yPos, teamRadius, teamRadius, -PI, 0);
+  //    fill(teamColor[colorIndex * 2 + 1], opacity);
+  //    arc(teamData[i][j].xPos, teamData[i][j].yPos, teamRadius, teamRadius, 0, PI);
+  //  }
+  //}
+  for (int i = 1; i < teamData.length; i++) {
     for (int j = 10 * teamCurrentPage; j < 10 * teamCurrentPage + teamRankNum; j++) {
       int colorIndex = teamColorMap.get(teamData[i][j].teamId);
       if(teamData[i][j].teamId.equals(teamRankHighlight)) {
@@ -459,13 +485,7 @@ void drawTeamInfo() {
 
 void drawTeamYearInfo() {
   int rightPos = teamInfoXPos + 330;
-  TeamData td = teamSelectedTeam.get(0);
-  for (int i = 1; i < teamSelectedTeam.size(); i++) {
-    if (teamSelectedTeam.get(i).year == teamSelectYear) {
-      td = teamSelectedTeam.get(i);
-      break;
-    }
-  }
+  TeamData td = teamSelectedTeam.get(teamYearIndex);
   fill(teamDefaultColor, teamMarkOpacity);
   textFont(f, 50);
   textAlign(CENTER);
@@ -510,21 +530,62 @@ void drawTeamYearInfo() {
   textAlign(LEFT);
   fill(teamColor[teamColorId * 2], teamMarkOpacity / 2);
   text("Total Salary:", rightPos, teamInfoYPos + 0 * teamInfoRowSize);
-  text("Performance Score:", rightPos, teamInfoYPos + 3 * teamInfoRowSize);
-  text("Investment Score:", rightPos, teamInfoYPos + 6 * teamInfoRowSize);
+  text("FA Player:", rightPos, teamInfoYPos + 4 * teamInfoRowSize);
+  text("Non-FA Player:", rightPos, teamInfoYPos + 5 * teamInfoRowSize);
+  text("New FA Player:", rightPos, teamInfoYPos + 6 * teamInfoRowSize);
+  text("New Non-FA Player:", rightPos, teamInfoYPos + 7 * teamInfoRowSize);
+  text("Performance Score:", rightPos, teamInfoYPos + 9 * teamInfoRowSize);
+  text("Investment Score:", rightPos, teamInfoYPos + 10.7 * teamInfoRowSize);
   
   textAlign(RIGHT);
   fill(teamColor[teamColorId * 2 + 1], teamMarkOpacity);
-  String[] scores = new String[3];
+  int pIdCount;
+  String[] scores = new String[7];
+  String diff = str(abs(td.totalSalary - teamSelectedTeam.get(teamYearIndex - 1).totalSalary));
+  String temp = diff;
   scores[0] = str(td.totalSalary);
   for (int i = 3; i < str(td.totalSalary).length(); i += 3) {
     scores[0] = scores[0].substring(0, str(td.totalSalary).length() - i) + "," + scores[0].substring(str(td.totalSalary).length() - i);
   }
-  scores[1] = nf(td.performanceScore, 1, 2);
-  scores[2] = nf(td.investmentScore, 1, 2);
+  for (int i = 3; i < temp.length(); i += 3) {
+    diff = diff.substring(0, temp.length() - i) + "," + diff.substring(temp.length() - i);
+  }
+  scores[1] = str(td.faPlayers.size());
+  pIdCount = 0;
+  for (String pId: td.faPlayers)
+    if (td.players.contains(pId))
+      pIdCount++;
+  scores[2] = str(td.players.size() - pIdCount);
+  pIdCount = 0;
+  for (String pId: td.faPlayers)
+    if (teamSelectedTeam.get(teamYearIndex - 1).players.contains(pId) || teamSelectedTeam.get(teamYearIndex - 1).faPlayers.contains(pId))
+      pIdCount++;
+  scores[3] = str(td.faPlayers.size() - pIdCount);
+  pIdCount = 0;
+  for (String pId: td.players)
+    if (teamSelectedTeam.get(teamYearIndex - 1).players.contains(pId) || teamSelectedTeam.get(teamYearIndex - 1).faPlayers.contains(pId))
+      pIdCount++;
+  scores[4] = str(td.players.size() - pIdCount);
+  scores[5] = nf(td.performanceScore, 1, 2);
+  scores[6] = nf(td.investmentScore, 1, 2);
   textAlign(RIGHT);
-  for (int i = 0; i < scores.length; i++)
-    text(scores[i], windowWidth - 130, teamInfoYPos + (1.5 + (i * 3)) * teamInfoRowSize);
+  for (int i = 0; i < 4; i++) {
+    text(scores[i + 1], windowWidth - 50, teamInfoYPos + (4 + (i * 1)) * teamInfoRowSize);
+  }
+  text(scores[0], windowWidth - 50, teamInfoYPos + 1.5 * teamInfoRowSize + 20);
+  for (int i = 0; i < scores.length - 5; i++) {
+    text(scores[i + 5], windowWidth - 50, teamInfoYPos + (9.9 + (i * 1.6)) * teamInfoRowSize);
+  }
+  
+  if (td.totalSalary > teamSelectedTeam.get(teamYearIndex - 1).totalSalary) {
+    fill(teamRed, teamMarkOpacity / 1.3);
+    diff = "+" + diff;
+  }
+  else {
+    fill(teamGreen, teamMarkOpacity / 1.3);
+    diff = "-" + diff;
+  }
+  text("( " + diff + " )", windowWidth - 32, teamInfoYPos + 1.5 * teamInfoRowSize - 15);
   textAlign(LEFT);
 }
 
@@ -595,7 +656,7 @@ void drawTeamMode1Buttons() {
   
   if (teamViewByMode == 0) {
     strokeWeight(0);
-    if (teamYearIndex != 0) {
+    if (teamYearIndex != 1) {
       c = teamDefaultColor;
       if (mouseX > teamYearTriX1 - 2 && mouseX < teamYearTriX1 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2)
         c = teamButtonHighlight;
@@ -616,20 +677,18 @@ void drawTeamMode1Buttons() {
 
 void checkTeamRankingHover() {
   boolean found = false;
-  for (int i = 0; i < teamData.length; i++) {
+  for (int i = 1; i < teamData.length; i++) {
     for (int j = 10 * teamCurrentPage; j < 10 * teamCurrentPage + teamRankNum; j++) {
       if (mouseX > teamData[i][j].xPos - teamRadius && mouseX < teamData[i][j].xPos + teamRadius && mouseY > teamData[i][j].yPos - teamRadius && mouseY < teamData[i][j].yPos + teamRadius) {
         found = true;
         textFont(f, 16);
         fill(teamTextDefaultColor, int(teamLineOpacity * 12));
-        text(str(teamData[i][j].year), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * (teamData[i][j].year - teamStartYear) + teamMarginX + 15, teamMarginTop - 10);
+        text(str(teamData[i][j].year), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * (teamData[i][j].year - teamStartYear - 1) + teamMarginX + 15, teamMarginTop - 10);
         text(str(j + 1), 20, teamData[i][j].yPos + 5);
         textFont(f, 14);
-        text("(", windowWidth - 220, windowHeight - 20);
-        text(nf(teamData[i][j].performanceScore, 1, 2), windowWidth - 200, windowHeight - 20);
-        text(",", windowWidth - 155, windowHeight - 20);
-        text(nf(teamData[i][j].investmentScore, 1, 2), windowWidth - 130, windowHeight - 20);
-        text(")", windowWidth - 90, windowHeight - 20);
+        fill(teamButtonHighlight, int(teamLineOpacity * 12));
+        text("(" + nf(teamData[i][j].performanceScore, 1, 2) + ")", 505, 85);
+        text("(" + nf(teamData[i][j].investmentScore, 1, 2) + ")", 505, 128);
         
         teamRankHighlight = teamData[i][j].teamId;
         teamYearHighlight = i + teamStartYear;
@@ -784,7 +843,7 @@ void mousePressed() {
         teamViewByMode = teamViewByMode == 0 ? 1 : 0;
         teamViewByButtonLabel = teamViewByLabels[teamViewByMode];
       }
-      if (teamYearIndex != 0 && mouseX > teamYearTriX1 - 2 && mouseX < teamYearTriX1 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2) {
+      if (teamYearIndex != 1 && mouseX > teamYearTriX1 - 2 && mouseX < teamYearTriX1 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2) {
         teamYearIndex--;
         teamSelectYear = teamSelectedTeam.get(teamYearIndex).year;
       }
