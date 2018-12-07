@@ -72,7 +72,7 @@ String teamRankHighlight = "";
 String teamRankHighlightName = "";
 Textfield[] weights = new Textfield[6];
 
-// team mode 1
+// team mode 1 - teamviewByMode 0
 int teamSelectYear = -1;
 int teamSelectRadius = 150;
 int teamSelectMarkX = 120;
@@ -95,6 +95,26 @@ color teamGreen = #32CD32;
 color teamRed = #DC143C;
 String[] teamViewByLabels = {"View by Year", "View by Team"};
 String teamViewByButtonLabel = teamViewByLabels[teamViewByMode];
+
+// team mode 1 - teamviewByMode 1
+int teamLineChartX = 450;
+int teamLineChartY = 200;
+int teamLineChartWidth = 650;
+int teamLineChartHeight = 400;
+int teamLineChartMarginX = 30;
+int teamLineChartMarginY = 30;
+int teamLineChartButtonsX = 440;
+int teamLineChartButtonsY = 90;
+int teamLineChartButtonsHeight = 30;
+int teamLineChartButtonsSelected = 0;
+int teamLineDataHeight = 8;
+int [] teamLineChartButtonsWidth = {140, 115, 120, 125, 125, 220, 205, 130, 195};
+float teamLineDataSpeed = 0.05;
+float teamLineChartMaxVal;
+float teamLineChartMinVal;
+String[] teamLineChartButtonLabels = {"Total Salary", "Win Num", "Loss Num", "Run Score", "Home Run", "Performance Score", "Investment Score"};
+TeamLineData[] teamLineData;
+TeamLineData[] targetTeamLineData;
 
 List<TeamData> teamSelectedTeam = new ArrayList<TeamData>();
  
@@ -157,9 +177,6 @@ void setup() {
     for (int j = 0; j < teamColumnCount; j++)
       teamInfo[j] = row.getString(teamAttributes[j]);
     teamInfo[teamColumnCount] = str(rank + 1);
-    //teamData[year][rank] = new TeamData((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * year + 33 + teamMarginX,
-    //                                    (windowHeight - teamMarginBottom - teamMarginTop) / teamRankNum * (rank % teamRankNum) + teamMarginTop + 30, 
-    //                                    teamInfo);
     teamData[year][rank] = new TeamData((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * (year - 1) + 33 + teamMarginX,
                                         (windowHeight - teamMarginBottom - teamMarginTop) / teamRankNum * (rank % teamRankNum) + teamMarginTop + 30, 
                                         teamInfo);
@@ -173,7 +190,36 @@ void setup() {
   loadTeamPlayer();
   addTeamColor();
   
-  if (currentMode == 0) {
+  // temp
+  //teamRankHighlight = "MIN";
+  //teamYearHighlight = 2010;
+  //teamSelectedTeam.clear();
+  //for (int i = 0; i < teamData.length; i++) {
+  //  for (int j = 0; j < teamCount; j++) {
+  //    if (teamData[i][j].teamId.equals(teamRankHighlight)){
+  //      teamSelectedTeam.add(teamData[i][j]);
+  //      if (teamData[i][j].year == teamYearHighlight)
+  //        teamYearIndex = teamSelectedTeam.size() - 1;
+  //      break;
+  //    }
+  //  }
+  //}
+  //for (int i = 0; i < teamID.length; i++) {
+  //  if (teamID[i].equals(teamRankHighlight)) {
+  //    teamColorId = i;
+  //    break;
+  //  }
+  //}
+  //teamSelectYear = teamYearHighlight;
+  //teamSelectTransition = true;
+  //teamTargetMode = 1;
+  //teamMode = 1;
+  //teamViewByMode = 1;
+  //setTeamLineChartMaxMinVal();
+  //createTeamLineData();
+  //updateTeamLineData();
+  
+  if (currentMode == 0 && teamMode == 0) {
     displayWeightsTextfield(true);
   }
   else {
@@ -206,7 +252,9 @@ void draw() {
         drawTeamYearInfo();
       }
       else {
-        
+        drawTeamLineChart();
+        drawAndUpdateTeamLineData();
+        checkTeamLineDataHover();
       }
     }
     if (teamSelectTransition)
@@ -214,6 +262,10 @@ void draw() {
     break;
     
     case 1:
+    break;
+    
+    case 2:
+    //do your thing
     break;
     
     default:
@@ -384,6 +436,7 @@ void resetTeamMode() {
   teamTargetMode = 0;
   teamLineOpacity = teamLineMaxOpacity;
   setWeightsOpacity(255);
+  teamLineChartButtonsSelected = 0;
 }
 
 void drawTeamLines() {
@@ -403,10 +456,6 @@ void drawTeamLines() {
   fill(teamTextDefaultColor, teamLineOpacity * 2);
   stroke(0, teamLineOpacity);
   text(str(teamStartYear + 1), teamMarginX + 15, teamMarginTop - 10);
-  //for(int i = 1; i <= teamEndYear - teamStartYear; i++) {
-  //  text(str(teamStartYear + i), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX + 15, teamMarginTop - 10);
-  //  line((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX, teamMarginTop - 15, (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + teamMarginX, windowHeight - teamMarginBottom); 
-  //}
   for(int i = 1; i <= teamEndYear - teamStartYear - 1; i++) {
     text(str(teamStartYear + i + 1), (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * i + teamMarginX + 15, teamMarginTop - 10);
     line((windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * i + teamMarginX, teamMarginTop - 15, (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * i + teamMarginX, windowHeight - teamMarginBottom); 
@@ -422,20 +471,6 @@ void drawTeamRanking() {
   noStroke();
   textFont(f, 16);
   int opacity;
-  //for (int i = 0; i < teamData.length; i++) {
-  //  for (int j = 10 * teamCurrentPage; j < 10 * teamCurrentPage + teamRankNum; j++) {
-  //    int colorIndex = teamColorMap.get(teamData[i][j].teamId);
-  //    if(teamData[i][j].teamId.equals(teamRankHighlight)) {
-  //      opacity = int(teamLineOpacity * 12);
-  //    }
-  //    else
-  //      opacity = int(teamLineOpacity * 4);
-  //    fill(teamColor[colorIndex * 2], opacity);
-  //    arc(teamData[i][j].xPos, teamData[i][j].yPos, teamRadius, teamRadius, -PI, 0);
-  //    fill(teamColor[colorIndex * 2 + 1], opacity);
-  //    arc(teamData[i][j].xPos, teamData[i][j].yPos, teamRadius, teamRadius, 0, PI);
-  //  }
-  //}
   for (int i = 1; i < teamData.length; i++) {
     for (int j = 10 * teamCurrentPage; j < 10 * teamCurrentPage + teamRankNum; j++) {
       int colorIndex = teamColorMap.get(teamData[i][j].teamId);
@@ -589,6 +624,100 @@ void drawTeamYearInfo() {
   textAlign(LEFT);
 }
 
+void drawTeamLineChart() {
+  strokeWeight(3);
+  color c = teamDefaultColor;
+  int preX = teamLineChartButtonsX + 10;
+  textFont(f, 23);
+  textAlign(LEFT);
+  for (int i = 0; i < teamLineChartButtonLabels.length; i++) {
+    int yPos = teamLineChartButtonsY;
+    int buttonX = preX + 30;
+    if (i == 4) 
+      buttonX = teamLineChartButtonsX + 30;
+    if (i > 3)
+      yPos += 50;
+      
+    if (teamLineChartButtonsSelected != i) {
+      c = teamDefaultColor;
+      if (mouseX > buttonX && mouseX < buttonX + teamLineChartButtonsWidth[i] && mouseY > yPos && mouseY < yPos + teamLineChartButtonsHeight)
+        c = teamButtonHighlight;
+      fill(255);
+      stroke(c, teamMarkOpacity / 2);
+      rect(buttonX, yPos, teamLineChartButtonsWidth[i], teamLineChartButtonsHeight); 
+      fill(c, teamMarkOpacity);
+      text(teamLineChartButtonLabels[i], buttonX + 11, yPos + 25);
+    }
+    else {
+      c = teamButtonHighlight;
+      fill(c, teamMarkOpacity / 2);
+      stroke(c, teamMarkOpacity / 2);
+      rect(buttonX, yPos, teamLineChartButtonsWidth[i], teamLineChartButtonsHeight); 
+      fill(255, 255);
+      text(teamLineChartButtonLabels[i], buttonX + 11, yPos + 25);
+    }    
+    preX = buttonX + teamLineChartButtonsWidth[i];
+  }
+  c = teamDefaultColor;
+  stroke(c, teamMarkOpacity);
+  textFont(f, 20);
+  fill(teamDefaultColor, teamMarkOpacity);
+  text("Year", teamLineChartX + teamLineChartWidth / 2 - 10, teamLineChartY + teamLineChartHeight + 55);
+  fill(255);
+  rect(teamLineChartX, teamLineChartY, teamLineChartWidth, teamLineChartHeight); 
+  textFont(f, 12);
+  textAlign(CENTER);
+  fill(teamDefaultColor, teamMarkOpacity);
+  int start = teamSelectedTeam.get(0).year == 2000 ? 1 : 0;
+  for (int i = start; i < teamSelectedTeam.size(); i++) {
+    line(teamLineChartX + teamLineChartWidth / (teamSelectedTeam.size() - start + 1) * (i - start + 1), teamLineChartY + teamLineChartHeight - 5, 
+         teamLineChartX + teamLineChartWidth / (teamSelectedTeam.size() - start + 1) * (i - start + 1), teamLineChartY + teamLineChartHeight + 5);
+    text(str(teamSelectedTeam.get(i).year), teamLineChartX + teamLineChartWidth / (teamSelectedTeam.size() - start + 1) * (i - start + 1), teamLineChartY + teamLineChartHeight + 25);
+  }
+  textFont(f, 20);
+  textAlign(RIGHT);
+  line(teamLineChartX - 5, teamLineChartY + teamLineChartMarginY, teamLineChartX + 5, teamLineChartY + teamLineChartMarginY);
+  line(teamLineChartX - 5, teamLineChartY + teamLineChartHeight - teamLineChartMarginY, teamLineChartX + 5, teamLineChartY + teamLineChartHeight - teamLineChartMarginY);
+  if (teamLineChartButtonsSelected == 0) {
+    String max = nf(teamLineChartMaxVal, 1, 0);
+    String min = nf(teamLineChartMinVal, 1, 0);
+    for (int i = 3; i < nf(teamLineChartMaxVal, 1, 0).length(); i += 3) {
+      max = max.substring(0, nf(teamLineChartMaxVal, 1, 0).length() - i) + "," + max.substring(nf(teamLineChartMaxVal, 1, 0).length() - i);
+    }
+    for (int i = 3; i < nf(teamLineChartMinVal, 1, 0).length(); i += 3) {
+      min = min.substring(0, nf(teamLineChartMinVal, 1, 0).length() - i) + "," + min.substring(nf(teamLineChartMinVal, 1, 0).length() - i);
+    }
+    text(max, teamLineChartX - 15, teamLineChartY + teamLineChartMarginY + 5);
+    text(min, teamLineChartX - 15, teamLineChartY + teamLineChartHeight - teamLineChartMarginY + 5);
+  }
+  else {
+    int decimals = (teamLineChartButtonsSelected == 5 || teamLineChartButtonsSelected == 6) ? 2 : 0;
+    text(nf(teamLineChartMaxVal, 1, decimals), teamLineChartX - 15, teamLineChartY + teamLineChartMarginY + 5);
+    text(nf(teamLineChartMinVal, 1, decimals), teamLineChartX - 15, teamLineChartY + teamLineChartHeight - teamLineChartMarginY + 5);
+  }
+  strokeWeight(1);
+}
+
+void drawAndUpdateTeamLineData() {
+  noStroke();
+  int colorIndex = teamColorMap.get(teamSelectedTeam.get(0).teamId);
+  fill(teamColor[colorIndex * 2], teamMarkOpacity);
+  for (int i = 0; i < teamLineData.length; i++) {
+    ellipse(teamLineData[i].xPos, teamLineData[i].yPos, teamLineDataHeight, teamLineDataHeight);
+  }
+  strokeWeight(3);
+  stroke(teamColor[colorIndex * 2],teamMarkOpacity / 2);
+  for (int i = 1; i < teamLineData.length; i++) {
+    line(teamLineData[i].xPos, teamLineData[i].yPos, teamLineData[i - 1].xPos, teamLineData[i - 1].yPos);
+  }
+  for (int i = 0; i < teamLineData.length; i++) {
+    teamLineData[i].xPos += (targetTeamLineData[i].xPos - teamLineData[i].xPos) * teamLineDataSpeed;
+    teamLineData[i].yPos += (targetTeamLineData[i].yPos - teamLineData[i].yPos) * teamLineDataSpeed;
+  }
+  strokeWeight(1);
+  stroke(0);
+}
+
 void drawTeamMode0Buttons() {
   strokeWeight(3);
   color c = teamDefaultColor;
@@ -704,8 +833,37 @@ void checkTeamRankingHover() {
   }
 }
 
+void checkTeamLineDataHover() {
+  for (int i = 0; i < teamLineData.length; i++) {
+    if (mouseX > teamLineData[i].xPos - 6 && mouseX < teamLineData[i].xPos + 6 && mouseY > teamLineData[i].yPos - 6 && mouseY < teamLineData[i].yPos + 6) {
+      fill(255);
+      rect(mouseX - 90, mouseY + 10, 80, 22);
+      fill(0);
+      textFont(f, 12);
+      textAlign(CENTER);
+      if (teamLineChartButtonsSelected == 0) {
+        String temp = nf(getTeamDataInfoLineChart(teamSelectedTeam.get(teamLineData[i].index)),1, 0);
+        String oldTemp = temp;
+        for (int j = 3; j < oldTemp.length(); j += 3) {
+          temp = temp.substring(0, oldTemp.length() - j) + "," + temp.substring(oldTemp.length() - j);
+        }
+        text(temp, mouseX - 48, mouseY + 25);
+      }
+      else if (teamLineChartButtonsSelected == 5 || teamLineChartButtonsSelected == 6)
+        text(nf(getTeamDataInfoLineChart(teamSelectedTeam.get(teamLineData[i].index)), 1, 2), mouseX - 48, mouseY + 25);
+      else
+        text(nf(getTeamDataInfoLineChart(teamSelectedTeam.get(teamLineData[i].index)), 1, 0), mouseX - 48, mouseY + 25);
+      noStroke();
+      fill(teamColor[teamColorMap.get(teamSelectedTeam.get(0).teamId) * 2], teamMarkOpacity);
+      ellipse(teamLineData[i].xPos, teamLineData[i].yPos, teamLineDataHeight + 4, teamLineDataHeight + 4);
+      stroke(0);
+      break;
+    }
+  }
+}
+
 void rerankTeam(float wlWeight, float divWeight, float wcWeight, float lgWeight, float wsWeight, float sWeight) {
-  for (int i = 0; i < teamData.length; i++) {
+  for (int i = 1; i < teamData.length; i++) {
     for (int j = 0; j < teamCount; j++) {
       teamData[i][j].performanceScore = wlWeight * float(teamData[i][j].winNum) / float(teamData[i][j].lossNum) + 
                                         divWeight * (teamData[i][j].divisionWin ? 1 : 0) +
@@ -717,9 +875,9 @@ void rerankTeam(float wlWeight, float divWeight, float wcWeight, float lgWeight,
     sortTeams(teamData[i]);
   }
   
-  for (int i = 0; i < teamData.length; i++) {
+  for (int i = 1; i < teamData.length; i++) {
     for (int j = 0; j < teamCount; j++) {
-      teamData[i][j].xPos = (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear + 1) * i + 33 + teamMarginX;
+      teamData[i][j].xPos = (windowWidth - teamMarginX * 2) / (teamEndYear - teamStartYear) * (i - 1) + 33 + teamMarginX;
       teamData[i][j].yPos = (windowHeight - teamMarginBottom - teamMarginTop) / teamRankNum * (j % teamRankNum) + teamMarginTop + 30;
     }
   }
@@ -746,6 +904,96 @@ void sortTeams(TeamData[] tds) {
   }
 }
 
+void setTeamLineChartMaxMinVal() {
+  teamLineChartMaxVal = 0;
+  teamLineChartMinVal = Integer.MAX_VALUE;
+  if (teamSelectedTeam != null && teamSelectedTeam.size() > 0) {
+    for (int i = teamSelectedTeam.get(0).year == 2000 ? 1 : 0; i < teamSelectedTeam.size(); i++) {
+      switch (teamLineChartButtonsSelected) {
+        case 0:
+        teamCompareMaxMin(teamSelectedTeam.get(i).totalSalary);
+        break;
+        case 1:
+        teamCompareMaxMin(teamSelectedTeam.get(i).winNum);
+        break;
+        case 2:
+        teamCompareMaxMin(teamSelectedTeam.get(i).lossNum);
+        break;
+        case 3:
+        teamCompareMaxMin(teamSelectedTeam.get(i).runScore);
+        break;
+        case 4:
+        teamCompareMaxMin(teamSelectedTeam.get(i).homeRun);
+        break;
+        case 5:
+        teamCompareMaxMin(teamSelectedTeam.get(i).performanceScore);
+        break;
+        case 6:
+        teamCompareMaxMin(teamSelectedTeam.get(i).investmentScore);
+        break;
+        default:
+        break;
+      }
+    }
+  }
+}
+
+void teamCompareMaxMin(int val) {
+  if (teamLineChartMaxVal < val)
+    teamLineChartMaxVal = val;
+  if (teamLineChartMinVal > val)
+    teamLineChartMinVal = val;
+}
+
+void teamCompareMaxMin(float val) {
+  if (teamLineChartMaxVal < val)
+    teamLineChartMaxVal = val;
+  if (teamLineChartMinVal > val)
+    teamLineChartMinVal = val;
+}
+
+void createTeamLineData() {
+  int start = teamSelectedTeam.get(0).year == 2000 ? 1 : 0;
+  teamLineData = new TeamLineData[teamSelectedTeam.size() - start];
+  targetTeamLineData = new TeamLineData[teamSelectedTeam.size() - start];
+  for (int i = 0; i < teamLineData.length; i++) {
+    teamLineData[i] = new TeamLineData(teamLineChartX + teamLineChartWidth / (teamLineData.length + 1) * (i + 1), teamLineChartY + teamLineChartHeight, i + start); 
+    targetTeamLineData[i] = new TeamLineData(teamLineChartX + teamLineChartWidth / (teamLineData.length + 1) * (i + 1), 
+    int((1 - (getTeamDataInfoLineChart(teamSelectedTeam.get(i + start)) - teamLineChartMinVal) / (teamLineChartMaxVal - teamLineChartMinVal))) * (teamLineChartHeight - 2 * teamLineChartMarginY) + teamLineChartY , i + start); 
+  }
+}
+
+void updateTeamLineData() {
+  int start = teamSelectedTeam.get(0).year == 2000 ? 1 : 0;
+  for (int i = 0; i < teamLineData.length; i++) {
+    targetTeamLineData[i] = new TeamLineData(teamLineChartX + teamLineChartWidth / (teamLineData.length + 1) * (i + 1), 
+    map(getTeamDataInfoLineChart(teamSelectedTeam.get(i + start)), teamLineChartMaxVal, teamLineChartMinVal, teamLineChartY + teamLineChartMarginY, teamLineChartY + teamLineChartHeight - teamLineChartMarginY), 
+    i + start); 
+  }
+}
+
+float getTeamDataInfoLineChart(TeamData td) {
+  switch (teamLineChartButtonsSelected) {
+    case 0:
+    return td.totalSalary;
+    case 1:
+    return td.winNum;
+    case 2:
+    return td.lossNum;
+    case 3:
+    return td.runScore;
+    case 4:
+    return td.homeRun;
+    case 5:
+    return td.performanceScore;
+    case 6:
+    return td.investmentScore;
+    default:
+    break;
+  }
+  return 0.0;
+}
+
 void teamSelectTransitioning() {
   if (teamMode == 0 && teamTargetMode == 1) {
     if (teamLineOpacity > 0) {
@@ -757,6 +1005,7 @@ void teamSelectTransitioning() {
       teamMode = teamTargetMode;
       teamViewByMode = 0;
       teamViewByButtonLabel = teamViewByLabels[teamViewByMode];
+      teamLineChartButtonsSelected = 0;
       displayWeightsTextfield(false);
     }
   }
@@ -776,6 +1025,8 @@ void teamSelectTransitioning() {
       teamSelectYear = -1;
       teamYearHighlight = -1;
       teamMode = teamTargetMode; 
+      teamLineData = null;
+      targetTeamLineData = null;
       displayWeightsTextfield(true);
     }
   }
@@ -830,6 +1081,10 @@ void mousePressed() {
           break;
         }
       }
+      teamLineChartButtonsSelected = 0;
+      setTeamLineChartMaxMinVal();
+      createTeamLineData();
+      updateTeamLineData();
       teamSelectYear = teamYearHighlight;
       teamSelectTransition = true;
       teamTargetMode = 1;
@@ -843,13 +1098,33 @@ void mousePressed() {
         teamViewByMode = teamViewByMode == 0 ? 1 : 0;
         teamViewByButtonLabel = teamViewByLabels[teamViewByMode];
       }
-      if (teamYearIndex != 1 && mouseX > teamYearTriX1 - 2 && mouseX < teamYearTriX1 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2) {
-        teamYearIndex--;
-        teamSelectYear = teamSelectedTeam.get(teamYearIndex).year;
+      if (teamViewByMode == 0) {
+        if (teamYearIndex != 1 && mouseX > teamYearTriX1 - 2 && mouseX < teamYearTriX1 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2) {
+          teamYearIndex--;
+          teamSelectYear = teamSelectedTeam.get(teamYearIndex).year;
+        }
+        if (teamYearIndex != teamSelectedTeam.size() - 1 && mouseX > teamYearTriX2 - 2 && mouseX < teamYearTriX2 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2) {
+          teamYearIndex++;
+          teamSelectYear = teamSelectedTeam.get(teamYearIndex).year;
+        }
       }
-      if (teamYearIndex != teamSelectedTeam.size() - 1 && mouseX > teamYearTriX2 - 2 && mouseX < teamYearTriX2 + teamYearTriWidth + 2 && mouseY > teamYearTriY - 2 && mouseY < teamYearTriY + teamYearTriHeight + 2) {
-        teamYearIndex++;
-        teamSelectYear = teamSelectedTeam.get(teamYearIndex).year;
+      else {
+        int preX = teamLineChartButtonsX + 10;
+        for (int i = 0; i < teamLineChartButtonLabels.length; i++) {
+          int yPos = teamLineChartButtonsY;
+          int buttonX = preX + 30;
+          if (i == 4) 
+            buttonX = teamLineChartButtonsX + 30;
+          if (i > 3)
+            yPos += 50;          
+          if (mouseX > buttonX && mouseX < buttonX + teamLineChartButtonsWidth[i] && mouseY > yPos && mouseY < yPos + teamLineChartButtonsHeight && teamLineChartButtonsSelected != i) {
+            teamLineChartButtonsSelected = i;
+            setTeamLineChartMaxMinVal();
+            updateTeamLineData();
+            break;
+          }
+          preX = buttonX + teamLineChartButtonsWidth[i];
+        }
       }
     }
   }
